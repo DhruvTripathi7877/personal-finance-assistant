@@ -302,7 +302,7 @@ class Agent:
         """Run Claude until it produces a final text response (possibly after tool calls)."""
         while True:
             response = self.client.messages.create(
-                model="claude-opus-4-5-20251101",
+                model="claude-sonnet-4-6",
                 max_tokens=1024,
                 system=system,
                 tools=TOOL_DEFINITIONS,
@@ -394,7 +394,7 @@ Return ONLY valid JSON in this shape:
 Do NOT include balances or transaction amounts — those will be fetched fresh next session."""
 
         response = self.client.messages.create(
-            model="claude-opus-4-5-20251101",
+            model="claude-haiku-4-5-20251001",
             max_tokens=512,
             system=extraction_prompt,
             messages=messages
@@ -467,5 +467,5 @@ python agent.py 2
 - [ ] Should memory extraction happen after every session (including Session 2) or only Session 1?
 - [ ] Should we add a `today` date to the system prompt so Claude has temporal awareness?
 - [ ] Error handling: what if `json.loads()` fails on memory extraction output?
-- [ ] Model choice: `claude-opus-4-5-20251101` vs `claude-haiku-4-5-20251001` for extraction (cost vs. quality)?
+- [ ] Model choice: `claude-sonnet-4-6` for main agent vs `claude-haiku-4-5-20251001` for extraction is the current plan. Sonnet is capable enough for finance reasoning; Haiku is cheaper for the structured extraction call.
 - [ ] Should we do any arithmetic in Python before passing data to Claude (e.g., pre-sum food delivery spend) or let Claude reason over raw transactions?
