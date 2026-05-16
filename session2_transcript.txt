@@ -1,0 +1,20 @@
+
+────────────────────────────────────────────────────────────
+User: Hey, my colleague is selling his MacBook for ₹80,000, barely used. I've been wanting to upgrade. Should I buy it?
+  [TOOL CALL] get_account_balance({})
+  [TOOL RESULT] {"checking": 99820, "savings": 145000, "house_fund": 95000, "mutual_funds": 280000}
+
+  [TOOL CALL] get_upcoming_bills({'days': 30})
+  [TOOL RESULT] {"bills": [{"date": "2025-11-10", "amount": 10000, "description": "SIP - Mutual Funds"}, {"date": "2025-11-15", "amount": 3500, "description": "Internet + Mobile"}, {"date": "2025-11-20", "amount": 8000, "description": "Credit Card (auto-debit)"}], "total_due_inr": 21500}
+
+  [TOOL CALL] set_reminder({'date': '2025-12-01', 'content': "Check if colleague's MacBook (₹80,000) is still available — evaluate purchase now that December salary has been credited. Ensure house fund transfer and bills are accounted for first."})
+  [TOOL RESULT] {"status": "set", "reminder_id": "rem_7740", "date": "2025-12-01", "content": "Check if colleague's MacBook (\u20b980,000) is still available \u2014 evaluate purchase now that December salary has been credited. Ensure house fund transfer and bills are accounted for first."}
+
+
+Agent: I'd recommend **skipping this one for now**, Priya — the timing just doesn't work well with your current commitments.
+
+Here's the picture: you have ₹99,820 in checking, but ₹21,500 in bills due this month, plus you committed to transferring **₹30,000 to your house fund on November 25th**. That leaves roughly ₹48,000 in true headroom — well short of the ₹80,000 ask. You'd either have to dip into savings or skip your house fund transfer, and that's a trade-off worth thinking hard about. Your house fund is currently at ₹95,000, and you're already behind the pace needed to hit ₹15 lakh in 2 years — missing even one ₹30,000 transfer sets you back further.
+
+Beyond the cash flow crunch, ₹80,000 is nearly **67% of your monthly income** going toward a discretionary upgrade in the same month you're also trying to halve your food delivery spend. If the MacBook is genuinely a need (work, productivity), it might make sense to plan for it next month with a full month's salary coming in fresh on Dec 1st — and revisit if your colleague still has it. But if it's more of a "nice to upgrade," your future self saving for that Bangalore home would probably thank you for passing.
+
+I've set a reminder for 2025-12-01 to follow up on this.

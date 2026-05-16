@@ -167,7 +167,7 @@ BEHAVIOR RULES:
 2. For user commitments, goals, and plans — use memory. These are durable.
 3. When the user asks something new, check if it connects to existing commitments before answering.
 4. Tool results include pre-computed totals (category_totals_inr, total_due_inr). Use those numbers directly — do not recalculate.
-5. Be warm but direct. One or two paragraphs max per response.
+5. Response format: state your recommendation clearly, then justify it using specific numbers from tools and the user's commitments from memory. One to two paragraphs.
 """
 
 
@@ -175,6 +175,8 @@ class Agent:
     def __init__(self, memory):
         self.memory = memory
         self.client = anthropic.Anthropic()
+        self._analysis_tools = [t for t in TOOL_DEFINITIONS if t["name"] != "set_reminder"]
+        self._reminder_tools = [t for t in TOOL_DEFINITIONS if t["name"] == "set_reminder"]
 
     def _agent_loop(self, system: str, messages: list) -> str:
         while True:
@@ -182,7 +184,7 @@ class Agent:
                 model="claude-sonnet-4-6",
                 max_tokens=1024,
                 system=system,
-                tools=TOOL_DEFINITIONS,
+                tools=self._analysis_tools,
                 messages=messages,
             )
 
@@ -204,6 +206,26 @@ class Agent:
                     if hasattr(block, "text"):
                         return block.text
 
+    def _proactive_reminder(self, system: str, messages: list) -> str | None:
+        check_msgs = messages + [{"role": "user", "content": (
+            "Based on your last response, should you proactively set a calendar reminder? "
+            "If yes, call set_reminder. If not needed, say 'No reminders needed.'"
+        )}]
+        resp = self.client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=256,
+            system=system,
+            tools=self._reminder_tools,
+            messages=check_msgs,
+        )
+        if resp.stop_reason == "tool_use":
+            for block in resp.content:
+                if block.type == "tool_use":
+                    result = execute_tool(block.name, block.input)
+                    if result.get("status") == "set":
+                        return result["date"]
+        return None
+
     def run_session(self, session_num: int, user_turns: list):
         system = build_system_prompt(self.memory, session_num)
         messages = []
@@ -214,6 +236,9 @@ class Agent:
             messages.append({"role": "user", "content": user_msg})
 
             reply = self._agent_loop(system, messages)
+            reminder_date = self._proactive_reminder(system, messages + [{"role": "assistant", "content": reply}])
+            if reminder_date:
+                reply += f"\n\nI've set a reminder for {reminder_date} to follow up on this."
             messages.append({"role": "assistant", "content": reply})
             print(f"\nAgent: {reply}")
 
@@ -221,6 +246,19 @@ class Agent:
             self._extract_and_save_memory(session_num, messages)
 
     def _extract_and_save_memory(self, session_num: int, messages: list):
+        # Strip tool-call machinery — extraction model only needs readable text
+        clean = []
+        for msg in messages:
+            content = msg["content"]
+            if isinstance(content, str):
+                clean.append({"role": msg["role"], "content": content})
+            elif isinstance(content, list):
+                text_parts = [b.text for b in content if hasattr(b, "text")]
+                if text_parts:
+                    clean.append({"role": msg["role"], "content": " ".join(text_parts)})
+        # API requires conversation to end with a user turn
+        clean.append({"role": "user", "content": "Extract the memory as instructed."})
+
         extraction_prompt = """From this conversation, extract exactly:
 1. A one-sentence summary of what happened
 2. Any explicit commitments the user made (amounts, dates, actions) as a list
@@ -235,7 +273,7 @@ Do NOT include balances or transaction amounts — those will be fetched fresh n
             model="claude-haiku-4-5-20251001",
             max_tokens=512,
             system=extraction_prompt,
-            messages=messages,
+            messages=clean,
         )
 
         raw = response.content[0].text

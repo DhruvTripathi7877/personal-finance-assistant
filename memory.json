@@ -1,0 +1,19 @@
+{
+  "sessions": [
+    {
+      "summary": "User committed to cutting food delivery spending in half (from \u20b912,890 to ~\u20b96,445/month) and transferring \u20b930,000 to their house fund this month, which is realistic given their \u20b91,20,000 salary and \u20b946,500 in committed bills.",
+      "commitments": [
+        "Cut food delivery spending to \u20b96,445/month (half of \u20b912,890)",
+        "Transfer \u20b930,000 to house fund on November 25th, 2025",
+        "Keep total monthly variable spending (excluding bills) under control to maintain savings target"
+      ],
+      "insights": [
+        "Food delivery at \u20b912,890/month was the largest discretionary expense in October \u2014 halving it frees up \u20b982,000 annually toward house goal",
+        "House fund goal is \u20b915 lakh in 2 years; currently at \u20b995,000 with \u20b930,000/month transfers would reach target in ~3.5 years",
+        "Monthly income of \u20b91,20,000 with \u20b946,500 committed bills leaves healthy savings capacity when discretionary spending is controlled"
+      ],
+      "session_id": 1,
+      "date": "2025-11-03"
+    }
+  ]
+}

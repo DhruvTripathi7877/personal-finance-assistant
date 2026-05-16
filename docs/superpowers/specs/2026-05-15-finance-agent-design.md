@@ -415,6 +415,17 @@ class Agent:
 
 ```python
     def _extract_and_save_memory(self, session_num: int, messages: list):
+        # Strip tool-call machinery — extraction model only needs readable text
+        clean = []
+        for msg in messages:
+            content = msg["content"]
+            if isinstance(content, str):
+                clean.append({"role": msg["role"], "content": content})
+            elif isinstance(content, list):
+                text_parts = [b.text for b in content if hasattr(b, "text")]
+                if text_parts:
+                    clean.append({"role": msg["role"], "content": " ".join(text_parts)})
+
         extraction_prompt = """From this conversation, extract exactly:
 1. A one-sentence summary of what happened
 2. Any explicit commitments the user made (amounts, dates, actions) as a list
