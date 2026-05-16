@@ -282,10 +282,13 @@ USER_PROFILE = {
 SESSION_DATES = {1: "2025-11-03", 2: "2025-11-06"}
 
 def build_system_prompt(memory: MemoryStore, session_num: int) -> str:
+    from datetime import datetime
     today = SESSION_DATES[session_num]
+    month_year = datetime.strptime(today, "%Y-%m-%d").strftime("%B %Y")  # "November 2025"
     return f"""You are a personal finance companion for {USER_PROFILE['name']}.
 
-TODAY'S DATE: {today}
+TODAY'S DATE: {today} ({month_year})
+When the user refers to a date by day only (e.g. "the 25th", "on Friday"), interpret it relative to today's date above — do not guess based on the current real-world date.
 
 USER PROFILE:
 - Age: {USER_PROFILE['age']}, {USER_PROFILE['city']}
@@ -307,7 +310,9 @@ BEHAVIOR RULES:
 **Why inject memory into the system prompt (not the conversation)?**
 The system prompt defines who Claude IS at the start of every session. Memory is background knowledge the agent genuinely has — not something being narrated to it mid-conversation. Injecting it as a user message ("here's what happened last time") would look unnatural.
 
-**Why `TODAY'S DATE`?** Claude's training has a knowledge cutoff and it has no clock. Without an explicit date, it cannot reason about time gaps ("three days ago you committed to..."), upcoming due dates ("your SIP is in 7 days"), or whether the savings transfer date has passed. The date is deterministic per session, so it belongs in code, not from an LLM.
+**Why `TODAY'S DATE` and the explicit month?** Claude has no clock and no real-time date access. Its implicit sense of "now" comes from training data — which has a cutoff in mid-2025, making its default "current date" unreliable. This creates a concrete non-determinism risk: the assignment's scenario is November 2025, but this code runs in May 2026. Without an explicit anchor, when Priya says "remind me on the 25th", Claude might produce `2025-11-25` one run and `2026-05-25` the next — depending on how it weighs the conversation's context clues vs. its implicit training-time "now". The `set_reminder` call would silently get the wrong date.
+
+The fix has two parts: (1) inject the exact ISO date from `SESSION_DATES` — a code constant, not inferred by LLM — so Claude has an unambiguous anchor. (2) derive the human-readable month/year in Python (`datetime.strptime`) and include the explicit instruction "do not guess based on the current real-world date." Claude's system prompt is its highest-priority context — it overrides implicit training assumptions completely.
 
 **Why Rule 4 (use pre-computed totals)?** We sum transactions in Python in `execute_tool()`. Rule 4 tells Claude to trust those pre-computed numbers rather than attempting its own arithmetic — reinforcing the code-does-math / LLM-does-judgment split.
 
