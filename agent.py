@@ -2,92 +2,39 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 import anthropic
+import tools as _tools
 from tools import (
     get_recent_transactions,
     get_account_balance,
     get_upcoming_bills,
     set_reminder,
 )
+from config import USER_PROFILE, SESSION_DATES, TOOL_DEFINITIONS, SESSIONS
 
-USER_PROFILE = {
-    "name": "Priya Sharma",
-    "age": 28,
-    "city": "Bangalore",
-    "monthly_income_inr": 120000,
-    "stated_goal": "Save ₹15 lakh in 2 years for a house down payment in Bangalore",
-}
 
-SESSION_DATES = {1: "2025-11-03", 2: "2025-11-06"}
-
-TOOL_DEFINITIONS = [
-    {
-        "name": "get_recent_transactions",
-        "description": (
-            "Get user's transactions from the last N days. "
-            "Use this to analyze spending patterns or check recent activity."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "days": {
-                    "type": "integer",
-                    "description": "How many days back to fetch",
-                }
-            },
-            "required": ["days"],
-        },
-    },
-    {
-        "name": "get_account_balance",
-        "description": (
-            "Get current account balances. Always call this for up-to-date numbers "
-            "— never use remembered balances, they go stale between sessions."
-        ),
-        "input_schema": {"type": "object", "properties": {}},
-    },
-    {
-        "name": "get_upcoming_bills",
-        "description": "Get bills due in the next N days.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "days": {
-                    "type": "integer",
-                    "description": "How many days ahead to look",
-                }
-            },
-            "required": ["days"],
-        },
-    },
-    {
-        "name": "set_reminder",
-        "description": "Set a reminder for the user on a specific date.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "date": {
-                    "type": "string",
-                    "description": "Date in YYYY-MM-DD format",
-                },
-                "content": {
-                    "type": "string",
-                    "description": "What to remind the user",
-                },
-            },
-            "required": ["date", "content"],
-        },
-    },
-]
+def _typewrite(line: str, delay: float = 0.1) -> None:
+    for ch in line:
+        sys.stdout.write(ch)
+        sys.stdout.flush()
+        time.sleep(delay)
+    sys.stdout.write("\n")
+    sys.stdout.flush()
 
 
 def execute_tool(name: str, args: dict) -> dict:
-    print(f"  [TOOL CALL] {name}({args})")
+    _typewrite(f"  \n[TOOL CALL] {name}({args})")
+
+    today = datetime.strptime(SESSION_DATES[_tools.CURRENT_SESSION], "%Y-%m-%d")
 
     if name == "get_recent_transactions":
-        txns = get_recent_transactions(args["days"])
+        days = args["days"]
+        cutoff = today - timedelta(days=days)
+        all_txns = get_recent_transactions(days)
+        txns = [t for t in all_txns if datetime.strptime(t["date"], "%Y-%m-%d") >= cutoff]
         by_category: dict = {}
         for t in txns:
             cat = t["category"]
@@ -98,20 +45,32 @@ def execute_tool(name: str, args: dict) -> dict:
             "total_debits_inr": sum(abs(t["amount"]) for t in txns if t["amount"] < 0),
             "total_credits_inr": sum(t["amount"] for t in txns if t["amount"] > 0),
         }
+        cats = " | ".join(f"{k} ₹{v:,}" for k, v in by_category.items())
+        _typewrite(
+            f"[TOOL RESULT] {len(txns)} txns — debits ₹{result['total_debits_inr']:,}"
+            f" | credits ₹{result['total_credits_inr']:,} | {cats}"
+        )
     elif name == "get_account_balance":
         result = get_account_balance()
+        summary = " | ".join(f"{k} ₹{v:,}" for k, v in result.items())
+        _typewrite(f"[TOOL RESULT] {summary}")
     elif name == "get_upcoming_bills":
-        bills = get_upcoming_bills(args.get("days", 30))
+        days = args.get("days", 30)
+        cutoff = today + timedelta(days=days)
+        all_bills = get_upcoming_bills(days)
+        bills = [b for b in all_bills if datetime.strptime(b["date"], "%Y-%m-%d") <= cutoff]
         result = {
             "bills": bills,
             "total_due_inr": sum(b["amount"] for b in bills),
         }
+        _typewrite(f"[TOOL RESULT] {len(bills)} bills | total due ₹{result['total_due_inr']:,}")
     elif name == "set_reminder":
         result = set_reminder(args["date"], args["content"])
+        _typewrite(f"[TOOL RESULT] reminder set for {result['date']}: {args['content']}")
     else:
         result = {"error": f"Unknown tool: {name}"}
+        _typewrite(f"[TOOL RESULT] error: unknown tool '{name}'")
 
-    print(f"  [TOOL RESULT] {json.dumps(result, ensure_ascii=False)}\n")
     return result
 
 
@@ -180,20 +139,26 @@ class Agent:
 
     def _agent_loop(self, system: str, messages: list, tools: list | None = None) -> str:
         tools = tools if tools is not None else TOOL_DEFINITIONS
-        printed_header = False
+        first_text_turn = True
         while True:
             with self.client.messages.stream(
                 model="claude-sonnet-4-6",
-                max_tokens=1024,
+                max_tokens=2048,
                 system=system,
                 tools=tools,
                 messages=messages,
             ) as stream:
+                text_started = False
                 for text in stream.text_stream:
-                    if not printed_header:
-                        print("\nAgent: ", end="", flush=True)
-                        printed_header = True
-                    print(text, end="", flush=True)
+                    if not text_started:
+                        if first_text_turn:
+                            sys.stdout.write("\nAgent: ")
+                            first_text_turn = False
+                        text_started = True
+                    for ch in text:
+                        sys.stdout.write(ch)
+                        sys.stdout.flush()
+                        time.sleep(0.015)
                 response = stream.get_final_message()
 
             if response.stop_reason == "tool_use":
@@ -305,18 +270,6 @@ Do NOT include agent-suggested targets or caps unless the user explicitly agreed
         self.memory.save(record)
         print(f"\n[MEMORY] Saved: {json.dumps(record, indent=2, ensure_ascii=False)}")
 
-
-SESSIONS = {
-    1: [
-        "I just got my salary credited. Help me figure out how much I can realistically save this month.",
-        "I feel like I'm spending too much on food delivery. How much did I actually spend on it last month?",
-        "Okay that's worse than I thought. Let's say I want to cut that in half AND put aside ₹30,000 for my house fund this month — is that realistic given my upcoming bills?",
-        "Got it. Remind me to actually transfer the ₹30,000 to my house fund on the 25th.",
-    ],
-    2: [
-        "Hey, my colleague is selling his MacBook for ₹80,000, barely used. I've been wanting to upgrade. Should I buy it?",
-    ],
-}
 
 if __name__ == "__main__":
     session_num = int(sys.argv[1]) if len(sys.argv) > 1 else 1
