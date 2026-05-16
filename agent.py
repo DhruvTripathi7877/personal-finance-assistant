@@ -146,8 +146,29 @@ class MemoryStore:
         return "\n".join(lines)
 
 
-def build_system_prompt(memory, session_num: int) -> str:
-    pass  # Task 6
+def build_system_prompt(memory: MemoryStore, session_num: int) -> str:
+    today = SESSION_DATES[session_num]
+    month_year = datetime.strptime(today, "%Y-%m-%d").strftime("%B %Y")
+    return f"""You are a personal finance companion for {USER_PROFILE['name']}.
+
+TODAY'S DATE: {today} ({month_year})
+If the user specifies a full date (e.g. "25th May 2026", "December 15"), use exactly what they said. If they refer to a date by day only (e.g. "the 25th", "on Friday") with no month or year, interpret it relative to today's date above — do not guess based on the current real-world date.
+
+USER PROFILE:
+- Age: {USER_PROFILE['age']}, {USER_PROFILE['city']}
+- Monthly income: ₹{USER_PROFILE['monthly_income_inr']:,} (credited on the 1st of each month)
+- Primary goal: {USER_PROFILE['stated_goal']}
+
+MEMORY FROM PREVIOUS SESSIONS:
+{memory.format_for_prompt()}
+
+BEHAVIOR RULES:
+1. For any current financial numbers (balances, upcoming bills), always call the relevant tool — never quote numbers from memory, they go stale.
+2. For user commitments, goals, and plans — use memory. These are durable.
+3. When the user asks something new, check if it connects to existing commitments before answering.
+4. Tool results include pre-computed totals (category_totals_inr, total_due_inr). Use those numbers directly — do not recalculate.
+5. Be warm but direct. One or two paragraphs max per response.
+"""
 
 
 class Agent:

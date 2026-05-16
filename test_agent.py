@@ -106,3 +106,54 @@ def test_set_reminder_returns_confirmation():
 def test_unknown_tool_returns_error_dict():
     result = execute_tool("nonexistent_tool", {})
     assert "error" in result
+
+
+# ── build_system_prompt ───────────────────────────────────────────────────────
+
+from agent import build_system_prompt
+
+
+def test_session1_prompt_has_correct_date():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    prompt = build_system_prompt(m, 1)
+    assert "2025-11-03" in prompt
+    assert "November 2025" in prompt
+
+
+def test_session2_prompt_has_correct_date():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    prompt = build_system_prompt(m, 2)
+    assert "2025-11-06" in prompt
+    assert "November 2025" in prompt
+
+
+def test_prompt_includes_user_profile():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    prompt = build_system_prompt(m, 1)
+    assert "Priya Sharma" in prompt
+    assert "120,000" in prompt
+
+
+def test_prompt_shows_no_previous_sessions_when_memory_empty():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    prompt = build_system_prompt(m, 1)
+    assert "No previous sessions." in prompt
+
+
+def test_prompt_injects_memory_from_session1():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    m.save({
+        "session_id": 1,
+        "date": "2025-11-03",
+        "summary": "User committed to ₹30k savings",
+        "commitments": ["Transfer ₹30,000 on 2025-11-25"],
+        "insights": [],
+    })
+    prompt = build_system_prompt(m, 2)
+    assert "Transfer ₹30,000 on 2025-11-25" in prompt
+    os.unlink(path)
