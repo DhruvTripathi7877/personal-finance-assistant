@@ -22,7 +22,65 @@ USER_PROFILE = {
 
 SESSION_DATES = {1: "2025-11-03", 2: "2025-11-06"}
 
-TOOL_DEFINITIONS = []  # Task 3
+TOOL_DEFINITIONS = [
+    {
+        "name": "get_recent_transactions",
+        "description": (
+            "Get user's transactions from the last N days. "
+            "Use this to analyze spending patterns or check recent activity."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "description": "How many days back to fetch",
+                }
+            },
+            "required": ["days"],
+        },
+    },
+    {
+        "name": "get_account_balance",
+        "description": (
+            "Get current account balances. Always call this for up-to-date numbers "
+            "— never use remembered balances, they go stale between sessions."
+        ),
+        "input_schema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "get_upcoming_bills",
+        "description": "Get bills due in the next N days.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "description": "How many days ahead to look",
+                }
+            },
+            "required": ["days"],
+        },
+    },
+    {
+        "name": "set_reminder",
+        "description": "Set a reminder for the user on a specific date.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "description": "Date in YYYY-MM-DD format",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "What to remind the user",
+                },
+            },
+            "required": ["date", "content"],
+        },
+    },
+]
 
 
 def execute_tool(name: str, args: dict):
