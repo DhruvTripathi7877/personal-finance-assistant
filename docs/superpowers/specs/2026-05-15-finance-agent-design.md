@@ -157,11 +157,26 @@ def execute_tool(name: str, args: dict):
     print(f"  [TOOL CALL] {name}({args})")    # visible in logs
 
     if name == "get_recent_transactions":
-        result = get_recent_transactions(args["days"])
+        txns = get_recent_transactions(args["days"])
+        # arithmetic in Python — assignment flags using LLM to sum/parse
+        by_category = {}
+        for t in txns:
+            cat = t["category"]
+            by_category[cat] = by_category.get(cat, 0) + abs(t["amount"])
+        result = {
+            "transactions": txns,
+            "category_totals_inr": by_category,
+            "total_debits_inr": sum(abs(t["amount"]) for t in txns if t["amount"] < 0),
+            "total_credits_inr": sum(t["amount"] for t in txns if t["amount"] > 0),
+        }
     elif name == "get_account_balance":
         result = get_account_balance()
     elif name == "get_upcoming_bills":
-        result = get_upcoming_bills(args.get("days", 30))
+        bills = get_upcoming_bills(args.get("days", 30))
+        result = {
+            "bills": bills,
+            "total_due_inr": sum(b["amount"] for b in bills),  # pre-summed in Python
+        }
     elif name == "set_reminder":
         result = set_reminder(args["date"], args["content"])
     else:
@@ -174,6 +189,8 @@ def execute_tool(name: str, args: dict):
 **Why print here?** The assignment requires tool calls and results to be visible in logs. Putting the print inside `execute_tool()` means every tool call anywhere in the agent gets logged automatically.
 
 **Why not use `TOOLS[name](**args)` from tools.py?** The provided functions take positional arguments, not keyword arguments. Explicit if/elif is safer and explicit about argument mapping.
+
+**Why pre-compute sums here?** The assignment explicitly flags using an LLM to do arithmetic ("sum a column"). We compute `category_totals_inr` and `total_due_inr` in Python and hand Claude the pre-computed numbers. Claude then uses those numbers to reason ("food delivery was ₹10,640 — that's 8.9% of your income"), but it never calculates them. Clean split: code does math, LLM does judgment.
 
 ---
 
@@ -262,8 +279,13 @@ USER_PROFILE = {
     "stated_goal": "Save ₹15 lakh in 2 years for a house down payment in Bangalore",
 }
 
-def build_system_prompt(memory: MemoryStore) -> str:
+SESSION_DATES = {1: "2025-11-03", 2: "2025-11-06"}
+
+def build_system_prompt(memory: MemoryStore, session_num: int) -> str:
+    today = SESSION_DATES[session_num]
     return f"""You are a personal finance companion for {USER_PROFILE['name']}.
+
+TODAY'S DATE: {today}
 
 USER PROFILE:
 - Age: {USER_PROFILE['age']}, {USER_PROFILE['city']}
@@ -277,12 +299,17 @@ BEHAVIOR RULES:
 1. For any current financial numbers (balances, upcoming bills), always call the relevant tool — never quote numbers from memory, they go stale.
 2. For user commitments, goals, and plans — use memory. These are durable.
 3. When the user asks something new, check if it connects to existing commitments before answering.
-4. Be warm but direct. One or two paragraphs max per response.
+4. Tool results include pre-computed totals (category_totals_inr, total_due_inr). Use those numbers directly — do not recalculate.
+5. Be warm but direct. One or two paragraphs max per response.
 """
 ```
 
 **Why inject memory into the system prompt (not the conversation)?**
 The system prompt defines who Claude IS at the start of every session. Memory is background knowledge the agent genuinely has — not something being narrated to it mid-conversation. Injecting it as a user message ("here's what happened last time") would look unnatural.
+
+**Why `TODAY'S DATE`?** Claude's training has a knowledge cutoff and it has no clock. Without an explicit date, it cannot reason about time gaps ("three days ago you committed to..."), upcoming due dates ("your SIP is in 7 days"), or whether the savings transfer date has passed. The date is deterministic per session, so it belongs in code, not from an LLM.
+
+**Why Rule 4 (use pre-computed totals)?** We sum transactions in Python in `execute_tool()`. Rule 4 tells Claude to trust those pre-computed numbers rather than attempting its own arithmetic — reinforcing the code-does-math / LLM-does-judgment split.
 
 **Why Rules 1 and 2 together?** They are the two sides of tool vs. memory discipline. Rule 1 handles dynamic data (always fetch fresh). Rule 2 handles durable data (use what you know). Being explicit in the prompt means Claude follows this without engineering it into every interaction.
 
@@ -330,7 +357,7 @@ class Agent:
                         return block.text
 
     def run_session(self, session_num: int, user_turns: list):
-        system = build_system_prompt(self.memory)
+        system = build_system_prompt(self.memory, session_num)
         messages = []
 
         for user_msg in user_turns:
@@ -400,15 +427,29 @@ Do NOT include balances or transaction amounts — those will be fetched fresh n
             messages=messages
         )
 
-        record = json.loads(response.content[0].text)
+        raw = response.content[0].text
+        try:
+            record = json.loads(raw)
+        except json.JSONDecodeError:
+            # Claude sometimes wraps JSON in markdown fences — strip and retry
+            import re
+            match = re.search(r'\{.*\}', raw, re.DOTALL)
+            record = json.loads(match.group()) if match else {
+                "summary": "Session completed.",
+                "commitments": [],
+                "insights": []
+            }
+
         record["session_id"] = session_num
-        record["date"] = "2025-11-03" if session_num == 1 else "2025-11-06"
+        record["date"] = SESSION_DATES[session_num]
 
         self.memory.save(record)
         print(f"\n[MEMORY] Saved: {json.dumps(record, indent=2)}")
 ```
 
 **Why use an LLM for extraction?** Deciding *what is worth remembering* from a conversation is a judgment call — exactly what LLMs are good at. The alternative (regex-matching for numbers and dates) would be brittle. The extraction prompt is tightly constrained: fixed JSON shape, explicit exclusions (no balances), so the LLM has little room to hallucinate.
+
+**Why a JSON parse fallback?** Claude occasionally wraps JSON output in markdown code fences (` ```json ... ``` `). `json.loads()` would fail on that. The fallback strips fences with a regex and retries. If that also fails, we store a safe empty record — the agent stays running and the session isn't lost.
 
 ---
 
@@ -464,8 +505,8 @@ python agent.py 2
 
 ## 13. Open Questions / Things to Refine
 
-- [ ] Should memory extraction happen after every session (including Session 2) or only Session 1?
-- [ ] Should we add a `today` date to the system prompt so Claude has temporal awareness?
-- [ ] Error handling: what if `json.loads()` fails on memory extraction output?
-- [ ] Model choice: `claude-sonnet-4-6` for main agent vs `claude-haiku-4-5-20251001` for extraction is the current plan. Sonnet is capable enough for finance reasoning; Haiku is cheaper for the structured extraction call.
-- [ ] Should we do any arithmetic in Python before passing data to Claude (e.g., pre-sum food delivery spend) or let Claude reason over raw transactions?
+- [x] Should memory extraction happen after every session (including Session 2) or only Session 1? → **Only after sessions that have meaningful new commitments. Session 2 is one turn — not worth extracting separately. Revisit if sessions grow.**
+- [x] Should we add a `today` date to the system prompt? → **Yes, added. `SESSION_DATES` dict maps session number to ISO date.**
+- [x] Error handling for `json.loads()` on memory extraction output? → **Added: regex fallback to strip markdown fences, then safe empty-record fallback.**
+- [x] Model choice? → **`claude-sonnet-4-6` for main agent (capable reasoning), `claude-haiku-4-5-20251001` for memory extraction (cheap, constrained task).**
+- [x] Arithmetic in Python or LLM? → **Python. `execute_tool()` pre-computes `category_totals_inr` and `total_due_inr`. System prompt Rule 4 tells Claude to use those directly.**
