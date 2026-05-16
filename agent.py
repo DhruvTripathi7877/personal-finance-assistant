@@ -205,13 +205,70 @@ class Agent:
                         return block.text
 
     def run_session(self, session_num: int, user_turns: list):
-        pass  # Task 8
+        system = build_system_prompt(self.memory, session_num)
+        messages = []
+
+        for user_msg in user_turns:
+            print(f"\n{'─' * 60}")
+            print(f"User: {user_msg}")
+            messages.append({"role": "user", "content": user_msg})
+
+            reply = self._agent_loop(system, messages)
+            messages.append({"role": "assistant", "content": reply})
+            print(f"\nAgent: {reply}")
+
+        if session_num == 1:
+            self._extract_and_save_memory(session_num, messages)
 
     def _extract_and_save_memory(self, session_num: int, messages: list):
-        pass  # Task 8
+        extraction_prompt = """From this conversation, extract exactly:
+1. A one-sentence summary of what happened
+2. Any explicit commitments the user made (amounts, dates, actions) as a list
+3. Key financial insights worth remembering (spending patterns, stated goals) as a list
+
+Return ONLY valid JSON in this shape:
+{"summary": "...", "commitments": ["..."], "insights": ["..."]}
+
+Do NOT include balances or transaction amounts — those will be fetched fresh next session."""
+
+        response = self.client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=512,
+            system=extraction_prompt,
+            messages=messages,
+        )
+
+        raw = response.content[0].text
+        try:
+            record = json.loads(raw)
+        except json.JSONDecodeError:
+            match = re.search(r"\{.*\}", raw, re.DOTALL)
+            record = json.loads(match.group()) if match else {
+                "summary": "Session completed.",
+                "commitments": [],
+                "insights": [],
+            }
+
+        record["session_id"] = session_num
+        record["date"] = SESSION_DATES[session_num]
+        self.memory.save(record)
+        print(f"\n[MEMORY] Saved: {json.dumps(record, indent=2)}")
 
 
-SESSIONS = {}  # Task 9
+SESSIONS = {
+    1: [
+        "I just got my salary credited. Help me figure out how much I can realistically save this month.",
+        "I feel like I'm spending too much on food delivery. How much did I actually spend on it last month?",
+        "Okay that's worse than I thought. Let's say I want to cut that in half AND put aside ₹30,000 for my house fund this month — is that realistic given my upcoming bills?",
+        "Got it. Remind me to actually transfer the ₹30,000 to my house fund on the 25th.",
+    ],
+    2: [
+        "Hey, my colleague is selling his MacBook for ₹80,000, barely used. I've been wanting to upgrade. Should I buy it?",
+    ],
+}
 
 if __name__ == "__main__":
-    pass  # Task 9
+    session_num = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+    memory = MemoryStore()
+    agent = Agent(memory)
+    agent.run_session(session_num, SESSIONS[session_num])
