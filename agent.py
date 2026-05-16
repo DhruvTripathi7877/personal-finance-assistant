@@ -88,7 +88,34 @@ def execute_tool(name: str, args: dict):
 
 
 class MemoryStore:
-    pass  # Task 5
+    def __init__(self, path: str = "memory.json"):
+        self.path = path
+        self.data = self._load()
+
+    def _load(self) -> dict:
+        if os.path.exists(self.path):
+            with open(self.path) as f:
+                return json.load(f)
+        return {"sessions": []}
+
+    def save(self, session_record: dict):
+        self.data["sessions"].append(session_record)
+        with open(self.path, "w") as f:
+            json.dump(self.data, f, indent=2)
+        print(f"  [MEMORY SAVED] {self.path}")
+
+    def format_for_prompt(self) -> str:
+        if not self.data["sessions"]:
+            return "No previous sessions."
+        lines = []
+        for s in self.data["sessions"]:
+            lines.append(f"Session {s['session_id']} ({s['date']}):")
+            lines.append(f"  Summary: {s['summary']}")
+            for c in s.get("commitments", []):
+                lines.append(f"  Commitment: {c}")
+            for i in s.get("insights", []):
+                lines.append(f"  Insight: {i}")
+        return "\n".join(lines)
 
 
 def build_system_prompt(memory, session_num: int) -> str:
