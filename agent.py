@@ -166,7 +166,7 @@ BEHAVIOR RULES:
 1. For any current financial numbers (balances, upcoming bills), always call the relevant tool — never quote numbers from memory, they go stale.
 2. For user commitments, goals, and plans — use memory. These are durable.
 3. When the user asks something new, check if it connects to existing commitments before answering.
-4. Tool results include pre-computed totals (category_totals_inr, total_due_inr). Use those numbers directly — do not recalculate.
+4. Tool results include pre-computed totals (category_totals_inr, total_due_inr, total_debits_inr). When reporting any spending figure, quote these exact numbers — never approximate, round, or re-derive them yourself.
 5. Response format: state your recommendation clearly, then justify it using specific numbers from tools and the user's commitments from memory. One to two paragraphs.
 """
 
@@ -180,14 +180,21 @@ class Agent:
 
     def _agent_loop(self, system: str, messages: list, tools: list | None = None) -> str:
         tools = tools if tools is not None else TOOL_DEFINITIONS
+        printed_header = False
         while True:
-            response = self.client.messages.create(
+            with self.client.messages.stream(
                 model="claude-sonnet-4-6",
                 max_tokens=1024,
                 system=system,
                 tools=tools,
                 messages=messages,
-            )
+            ) as stream:
+                for text in stream.text_stream:
+                    if not printed_header:
+                        print("\nAgent: ", end="", flush=True)
+                        printed_header = True
+                    print(text, end="", flush=True)
+                response = stream.get_final_message()
 
             if response.stop_reason == "tool_use":
                 tool_results = []
@@ -197,20 +204,21 @@ class Agent:
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": block.id,
-                            "content": json.dumps(result),
+                            "content": json.dumps(result, ensure_ascii=False),
                         })
                 messages.append({"role": "assistant", "content": response.content})
                 messages.append({"role": "user", "content": tool_results})
 
             else:
-                for block in response.content:
-                    if hasattr(block, "text"):
-                        return block.text
+                print()  # newline after streamed text
+                return next(b.text for b in response.content if hasattr(b, "text"))
 
     def _proactive_reminder(self, system: str, messages: list) -> str | None:
         check_msgs = messages + [{"role": "user", "content": (
-            "Based on your last response, should you proactively set a calendar reminder? "
-            "If yes, call set_reminder. If not needed, say 'No reminders needed.'"
+            "Review your last response. If you advised the user to defer a decision to a "
+            "specific future time (e.g. 'revisit in January', 'wait a couple months', "
+            "'check back in December'), set a reminder for that date using set_reminder. "
+            "If your response contained no time-based deferral, say 'No reminders needed.'"
         )}]
         resp = self.client.messages.create(
             model="claude-sonnet-4-6",
@@ -241,9 +249,10 @@ class Agent:
             if session_num > 1:
                 reminder_date = self._proactive_reminder(system, messages + [{"role": "assistant", "content": reply}])
                 if reminder_date:
-                    reply += f"\n\nI've set a reminder for {reminder_date} to follow up on this."
+                    suffix = f"\n\nI've set a reminder for {reminder_date} to follow up on this."
+                    print(suffix, end="")
+                    reply += suffix
             messages.append({"role": "assistant", "content": reply})
-            print(f"\nAgent: {reply}")
 
         if session_num == 1:
             self._extract_and_save_memory(session_num, messages)
@@ -274,7 +283,7 @@ Do NOT include balances or transaction amounts — those will be fetched fresh n
 Do NOT include agent-suggested targets or caps unless the user explicitly agreed to them."""
 
         response = self.client.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-4-6",
             max_tokens=1024,
             system=extraction_prompt,
             messages=clean,
