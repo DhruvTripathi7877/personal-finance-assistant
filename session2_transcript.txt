@@ -7,14 +7,12 @@ User: Hey, my colleague is selling his MacBook for ₹80,000, barely used. I've 
   [TOOL CALL] get_upcoming_bills({'days': 30})
   [TOOL RESULT] {"bills": [{"date": "2025-11-10", "amount": 10000, "description": "SIP - Mutual Funds"}, {"date": "2025-11-15", "amount": 3500, "description": "Internet + Mobile"}, {"date": "2025-11-20", "amount": 8000, "description": "Credit Card (auto-debit)"}], "total_due_inr": 21500}
 
-  [TOOL CALL] set_reminder({'date': '2025-12-01', 'content': "Check if colleague's MacBook (₹80,000) is still available — evaluate purchase now that December salary has been credited. Ensure house fund transfer and bills are accounted for first."})
-  [TOOL RESULT] {"status": "set", "reminder_id": "rem_7740", "date": "2025-12-01", "content": "Check if colleague's MacBook (\u20b980,000) is still available \u2014 evaluate purchase now that December salary has been credited. Ensure house fund transfer and bills are accounted for first."}
+  [TOOL CALL] set_reminder({'date': '2025-11-25', 'content': 'Transfer ₹30,000 to your house fund today — as committed on November 3rd to stay on track for your ₹15 lakh down payment goal!'})
+  [TOOL RESULT] {"status": "set", "reminder_id": "rem_5706", "date": "2025-11-25", "content": "Transfer ₹30,000 to your house fund today — as committed on November 3rd to stay on track for your ₹15 lakh down payment goal!"}
 
 
-Agent: I'd recommend **skipping this one for now**, Priya — the timing just doesn't work well with your current commitments.
+Agent: **I'd strongly recommend holding off on this purchase right now.** Here's the math: your checking account has ₹99,820, but ₹21,500 in bills are due this month (SIP, internet/mobile, credit card), plus your rent of ₹25,000 — that's ₹46,500 already committed, leaving you roughly ₹53,320. On top of that, you committed to transferring ₹30,000 to your house fund on November 25th, which brings your real discretionary buffer down to just ~₹23,320. Spending ₹80,000 on a MacBook right now would put you deeply in the red for the month.
 
-Here's the picture: you have ₹99,820 in checking, but ₹21,500 in bills due this month, plus you committed to transferring **₹30,000 to your house fund on November 25th**. That leaves roughly ₹48,000 in true headroom — well short of the ₹80,000 ask. You'd either have to dip into savings or skip your house fund transfer, and that's a trade-off worth thinking hard about. Your house fund is currently at ₹95,000, and you're already behind the pace needed to hit ₹15 lakh in 2 years — missing even one ₹30,000 transfer sets you back further.
+More importantly, this cuts directly against your house down payment goal. Your house fund sits at ₹95,000 against a ₹15 lakh target — you're already behind pace (needing ~₹62,500/month) and just committed to aggressively closing that gap. An ₹80,000 discretionary spend would wipe out more than a month's worth of house fund contributions and set your timeline back significantly. If you genuinely need an upgrade, it's worth waiting a couple of months until you've built a stronger buffer — or earmarking it as a planned purchase in your budget rather than an impulse decision.
 
-Beyond the cash flow crunch, ₹80,000 is nearly **67% of your monthly income** going toward a discretionary upgrade in the same month you're also trying to halve your food delivery spend. If the MacBook is genuinely a need (work, productivity), it might make sense to plan for it next month with a full month's salary coming in fresh on Dec 1st — and revisit if your colleague still has it. But if it's more of a "nice to upgrade," your future self saving for that Bangalore home would probably thank you for passing.
-
-I've set a reminder for 2025-12-01 to follow up on this.
+I've set a reminder for 2025-11-25 to follow up on this.

@@ -10,99 +10,66 @@ User: I just got my salary credited. Help me figure out how much I can realistic
   [TOOL CALL] get_upcoming_bills({'days': 30})
   [TOOL RESULT] {"bills": [{"date": "2025-11-05", "amount": 25000, "description": "Rent (auto-debit)"}, {"date": "2025-11-10", "amount": 10000, "description": "SIP - Mutual Funds"}, {"date": "2025-11-15", "amount": 3500, "description": "Internet + Mobile"}, {"date": "2025-11-20", "amount": 8000, "description": "Credit Card (auto-debit)"}], "total_due_inr": 46500}
 
-  [TOOL CALL] set_reminder({'date': '2025-11-05', 'content': 'Rent auto-debit of ₹25,000 today. Ensure your checking account has sufficient balance!'})
-  [TOOL RESULT] {"status": "set", "reminder_id": "rem_4501", "date": "2025-11-05", "content": "Rent auto-debit of \u20b925,000 today. Ensure your checking account has sufficient balance!"}
 
+Agent: Here's a clear picture of your finances this month, Priya! 🎉
 
-Agent: Great, I have everything I need. Here's a clear picture of your November finances:
+**Realistic savings this month: ₹30,000–₹35,000**
 
----
+Your salary of ₹1,20,000 is in, and you have **₹46,500 in committed bills** coming up — rent (₹25,000 on Nov 5), MF SIP (₹10,000 on Nov 10), internet + mobile (₹3,500 on Nov 15), and credit card (₹8,000 on Nov 20). That leaves you with ₹73,500 for discretionary spending. Looking at last month, your variable spending — food delivery (₹12,890), shopping (₹8,000), groceries (₹3,200), fuel (₹2,200), and entertainment (₹1,500) — totalled about **₹27,790**. Subtracting that from ₹73,500 gives you roughly **₹45,700** — but that assumes identical spending, which rarely happens.
 
-### 💰 November Savings Snapshot
-
-| | Amount |
-|---|---|
-| **Salary Credited** | ₹1,20,000 |
-| **Committed Bills (upcoming)** | ₹46,500 |
-| *(Rent ₹25,000 · SIP ₹10,000 · Internet+Mobile ₹3,500 · Credit Card ₹8,000)* | |
-| **Variable Spending (last month's baseline)** | ~₹19,790 |
-| *(Food delivery ₹12,890 · Groceries ₹3,200 · Fuel ₹2,200 · Entertainment ₹1,500)* | |
-| **⚠️ One-off Shopping (Oct)** | ₹8,000 |
-| **Realistically Saveable This Month** | **~₹43,710 – ₹53,710** |
-
----
-
-**My recommendation: target saving ₹45,000–₹50,000 this month.** Your committed bills of ₹46,500 are non-negotiable, and your day-to-day variable spending ran ~₹19,790 last month (excluding the ₹8,000 shopping on Myntra + Amazon, which was likely one-off). That leaves a comfortable buffer of around ₹53,710 before discretionary spending — but realistically, budgeting ~₹8,000–₹10,000 for variable expenses in November brings your saveable amount to **₹43,710–₹45,710**, which you should park directly into your house fund.
-
-**One flag worth noting:** your food delivery spend last month was ₹12,890 — that's quite high and a key lever you can pull. If you trim that to ₹6,000–₹7,000 this month, you could push your savings closer to ₹50,000. Your house fund currently sits at ₹95,000, and your goal is ₹15 lakh in 2 years — so every extra rupee counts! Would you like me to help you build a monthly savings plan toward that ₹15 lakh target? 🏠
-
-I've set a reminder for 2025-11-05 to follow up on this.
+**The honest recommendation:** Budget ~₹38,000–₹40,000 for variable expenses (giving yourself a small buffer for surprises), and **target ₹33,000–₹35,000 into your house fund** this month. Your house fund currently sits at ₹95,000 — you need ₹15 lakh in ~2 years, which means saving roughly **₹62,500/month** to hit that goal. You're currently well short of that pace, so every extra rupee directed to the house fund counts. One quick win staring at you: last month's food delivery spend of ₹12,890 is quite high — trimming that to ₹6,000–₹7,000 could meaningfully close the gap over time. Would you like to set a savings target or a reminder to transfer to your house fund this month? 🏡
 
 ────────────────────────────────────────────────────────────
 User: I feel like I'm spending too much on food delivery. How much did I actually spend on it last month?
 
-Agent: Based on the transaction data I already fetched, your food delivery spend last month was **₹12,890** across 8 orders on Swiggy and Zomato. That works out to an average of roughly **₹1,611 per order** — and it was your **single biggest discretionary expense** in October, more than groceries (₹3,200), fuel (₹2,200), and entertainment (₹1,500) combined!
+Agent: Based on the transaction data I already fetched, you spent **₹12,890 on food delivery last month** across 8 orders on Swiggy and Zomato. That's your **second-biggest expense category** after rent (₹25,000), and it's more than you spent on groceries (₹3,200), fuel (₹2,200), and entertainment (₹1,500) **combined**.
 
-To put it in context of your house goal: ₹12,890/month on food delivery adds up to **₹1,54,680 a year**. If you could halve that to ~₹6,000/month, you'd free up roughly **₹82,000 extra per year** toward your ₹15 lakh down payment — that's over 5% of your goal just from this one change.
+To put it in context of your house goal — ₹12,890/month on food delivery adds up to **₹1,54,680 over a year**. If you could cut that in half to ~₹6,000/month, you'd free up nearly **₹6,900/month** that could go straight into your house fund. Over 2 years, that's an extra **₹1.65 lakh** toward your ₹15 lakh target — a meaningful dent! 🏡
 
-A practical middle ground: set a **₹6,000–₹7,000 monthly cap** on food delivery (roughly 4–5 orders a week instead of daily), and cook at home for the rest. Would you like me to factor a specific food delivery budget into your monthly savings plan? 🍱
+Would you like to set a food delivery budget for this month, or would you like me to set a reminder to check in on it mid-month?
 
 ────────────────────────────────────────────────────────────
 User: Okay that's worse than I thought. Let's say I want to cut that in half AND put aside ₹30,000 for my house fund this month — is that realistic given my upcoming bills?
-  [TOOL CALL] set_reminder({'date': '2025-11-30', 'content': 'Transfer ₹30,000 to your house fund this month — as planned! Also check if you stayed within your ₹6,500 food delivery budget for November. 🏠'})
-  [TOOL RESULT] {"status": "set", "reminder_id": "rem_9196", "date": "2025-11-30", "content": "Transfer \u20b930,000 to your house fund this month \u2014 as planned! Also check if you stayed within your \u20b96,500 food delivery budget for November. \ud83c\udfe0"}
 
-
-Agent: Based on the data I already have, I can work this out right now — no need for additional tool calls!
-
-Here's how November looks with your plan:
+Agent: Great news — yes, it's absolutely realistic! Here's the math using the numbers I already have:
 
 | | Amount |
 |---|---|
-| **Salary** | ₹1,20,000 |
-| **Upcoming Bills** | ₹46,500 |
-| *(Rent ₹25,000 · SIP ₹10,000 · Internet+Mobile ₹3,500 · Credit Card ₹8,000)* | |
-| **Food Delivery (halved)** | ₹6,445 |
-| **Other Variable Spending** | ₹6,900 |
-| *(Groceries ₹3,200 · Fuel ₹2,200 · Entertainment ₹1,500)* | |
-| **House Fund Transfer** | ₹30,000 |
-| **Remaining Buffer** | **₹30,155** |
+| Monthly Income | ₹1,20,000 |
+| Upcoming Bills (rent, SIP, internet, credit card) | ₹46,500 |
+| House Fund Transfer (your goal) | ₹30,000 |
+| Food Delivery Budget (half of last month) | ₹6,445 |
+| Remaining Variable Expenses (groceries, fuel, etc.) | ~₹6,900 |
+| **Estimated Buffer Left** | **~₹30,155** |
 
-**Yes, this is absolutely realistic — and you'll still have a healthy ₹30,155 left over.** Your committed bills of ₹46,500 are already accounted for, and even with the other variable expenses (groceries, fuel, entertainment) kept at last month's levels, putting ₹30,000 into your house fund is very doable if you stick to the ~₹6,500 food delivery cap. The buffer of ₹30,155 gives you room for any unexpected expenses without stress.
+Your committed bills of ₹46,500 + ₹30,000 house fund + ₹6,445 food delivery + ~₹6,900 for other essentials (groceries, fuel) leaves you with a **healthy buffer of ~₹30,000** for the rest of the month. That's actually quite comfortable — it covers any unplanned shopping, medical expenses, or social plans without blowing the plan.
 
-On the house goal front, this is a great move — your house fund would grow from ₹95,000 to **₹1,25,000** this month. At ₹30,000/month, you'd hit ₹15 lakh in roughly **3.5 years**, but combined with your existing ₹95,000 and ongoing SIP (₹2.8L in mutual funds), you're likely on a faster track than that. Want me to map out a month-by-month plan to hit your ₹15 lakh target in exactly 2 years? 🏠
+The one thing to keep in mind: your credit card auto-debit of ₹8,000 on Nov 20 likely reflects last month's discretionary spending, so this month's choices will show up in *next* month's credit card bill. Stay mindful of that lag! 
 
-I've set a reminder for 2025-11-30 to follow up on this.
+**Recommendation:** Transfer ₹30,000 to your house fund right after your rent clears on Nov 5 — that way it's out of sight before discretionary spending temptations kick in. Would you like me to set a reminder for that? 🏡
 
 ────────────────────────────────────────────────────────────
 User: Got it. Remind me to actually transfer the ₹30,000 to my house fund on the 25th.
-  [TOOL CALL] set_reminder({'date': '2025-11-25', 'content': 'Transfer ₹30,000 to your house fund today! This is part of your November savings plan to build toward your ₹15 lakh down payment goal. 🏠'})
-  [TOOL RESULT] {"status": "set", "reminder_id": "rem_5212", "date": "2025-11-25", "content": "Transfer \u20b930,000 to your house fund today! This is part of your November savings plan to build toward your \u20b915 lakh down payment goal. \ud83c\udfe0"}
+  [TOOL CALL] set_reminder({'date': '2025-11-25', 'content': 'Transfer ₹30,000 to your house fund (down payment savings goal)! 🏡'})
+  [TOOL RESULT] {"status": "set", "reminder_id": "rem_2040", "date": "2025-11-25", "content": "Transfer ₹30,000 to your house fund (down payment savings goal)! 🏡"}
 
 
-Agent: Got it! I've noted that down — I'll remind you on **November 25th, 2025** to transfer **₹30,000 to your house fund**. 🏠
+Agent: Done! ✅ You'll get a reminder on **November 25th** to transfer ₹30,000 to your house fund. 
 
-Just to keep you accountable to the full plan for this month:
-- 🍱 **Keep food delivery under ₹6,500** (you've spent ₹650 so far on Nov 2nd, so ₹5,850 remaining)
-- 🏠 **Transfer ₹30,000 to house fund on the 25th**
-- 📈 **SIP of ₹10,000 auto-debits on the 10th** — nothing to do there
-
-You're set up for a strong November, Priya! Let me know if you'd like that 2-year savings roadmap to ₹15 lakh. 🎯
-
-I've set a reminder for 2025-11-25 to follow up on this.
+With this transfer, your house fund will grow from ₹95,000 to **₹1,25,000** — a solid step toward your ₹15 lakh goal. Keep this up consistently and you'll be making real progress! 💪 Is there anything else you'd like to plan for this month?
   [MEMORY SAVED] memory.json
 
 [MEMORY] Saved: {
-  "summary": "User committed to cutting food delivery spending in half (from \u20b912,890 to ~\u20b96,445/month) and transferring \u20b930,000 to their house fund this month, which is realistic given their \u20b91,20,000 salary and \u20b946,500 in committed bills.",
+  "summary": "User received salary of ₹1,20,000 and committed to cutting food delivery spending in half (from ₹12,890 to ~₹6,445/month) and transferring ₹30,000 to their house fund on November 25th.",
   "commitments": [
-    "Cut food delivery spending to \u20b96,445/month (half of \u20b912,890)",
-    "Transfer \u20b930,000 to house fund on November 25th, 2025",
-    "Keep total monthly variable spending (excluding bills) under control to maintain savings target"
+    "Cut food delivery spending in half to approximately ₹6,445/month",
+    "Transfer ₹30,000 to house fund on November 25th"
   ],
   "insights": [
-    "Food delivery at \u20b912,890/month was the largest discretionary expense in October \u2014 halving it frees up \u20b982,000 annually toward house goal",
-    "House fund goal is \u20b915 lakh in 2 years; currently at \u20b995,000 with \u20b930,000/month transfers would reach target in ~3.5 years",
-    "Monthly income of \u20b91,20,000 with \u20b946,500 committed bills leaves healthy savings capacity when discretionary spending is controlled"
+    "Food delivery is the second-largest expense category at ₹12,890/month, exceeding groceries, fuel, and entertainment combined",
+    "Upcoming committed bills total ₹46,500 (rent ₹25,000, MF SIP ₹10,000, internet/mobile ₹3,500, credit card ₹8,000)",
+    "House fund currently at ₹95,000 with a goal of ₹15 lakh in ~2 years, requiring approximately ₹62,500/month to hit target",
+    "Current savings pace is significantly below the monthly requirement needed to reach house fund goal"
   ],
   "session_id": 1,
   "date": "2025-11-03"

@@ -1,16 +1,16 @@
 {
   "sessions": [
     {
-      "summary": "User committed to cutting food delivery spending in half (from \u20b912,890 to ~\u20b96,445/month) and transferring \u20b930,000 to their house fund this month, which is realistic given their \u20b91,20,000 salary and \u20b946,500 in committed bills.",
+      "summary": "User received salary of ₹1,20,000 and committed to cutting food delivery spending in half (from ₹12,890 to ~₹6,445/month) and transferring ₹30,000 to their house fund on November 25th.",
       "commitments": [
-        "Cut food delivery spending to \u20b96,445/month (half of \u20b912,890)",
-        "Transfer \u20b930,000 to house fund on November 25th, 2025",
-        "Keep total monthly variable spending (excluding bills) under control to maintain savings target"
+        "Cut food delivery spending in half to approximately ₹6,445/month",
+        "Transfer ₹30,000 to house fund on November 25th"
       ],
       "insights": [
-        "Food delivery at \u20b912,890/month was the largest discretionary expense in October \u2014 halving it frees up \u20b982,000 annually toward house goal",
-        "House fund goal is \u20b915 lakh in 2 years; currently at \u20b995,000 with \u20b930,000/month transfers would reach target in ~3.5 years",
-        "Monthly income of \u20b91,20,000 with \u20b946,500 committed bills leaves healthy savings capacity when discretionary spending is controlled"
+        "Food delivery is the second-largest expense category at ₹12,890/month, exceeding groceries, fuel, and entertainment combined",
+        "Upcoming committed bills total ₹46,500 (rent ₹25,000, MF SIP ₹10,000, internet/mobile ₹3,500, credit card ₹8,000)",
+        "House fund currently at ₹95,000 with a goal of ₹15 lakh in ~2 years, requiring approximately ₹62,500/month to hit target",
+        "Current savings pace is significantly below the monthly requirement needed to reach house fund goal"
       ],
       "session_id": 1,
       "date": "2025-11-03"

@@ -111,7 +111,7 @@ def execute_tool(name: str, args: dict) -> dict:
     else:
         result = {"error": f"Unknown tool: {name}"}
 
-    print(f"  [TOOL RESULT] {json.dumps(result)}\n")
+    print(f"  [TOOL RESULT] {json.dumps(result, ensure_ascii=False)}\n")
     return result
 
 
@@ -129,7 +129,7 @@ class MemoryStore:
     def save(self, session_record: dict):
         self.data["sessions"].append(session_record)
         with open(self.path, "w") as f:
-            json.dump(self.data, f, indent=2)
+            json.dump(self.data, f, indent=2, ensure_ascii=False)
         print(f"  [MEMORY SAVED] {self.path}")
 
     def format_for_prompt(self) -> str:
@@ -178,13 +178,14 @@ class Agent:
         self._analysis_tools = [t for t in TOOL_DEFINITIONS if t["name"] != "set_reminder"]
         self._reminder_tools = [t for t in TOOL_DEFINITIONS if t["name"] == "set_reminder"]
 
-    def _agent_loop(self, system: str, messages: list) -> str:
+    def _agent_loop(self, system: str, messages: list, tools: list | None = None) -> str:
+        tools = tools if tools is not None else TOOL_DEFINITIONS
         while True:
             response = self.client.messages.create(
                 model="claude-sonnet-4-6",
                 max_tokens=1024,
                 system=system,
-                tools=self._analysis_tools,
+                tools=tools,
                 messages=messages,
             )
 
@@ -235,10 +236,12 @@ class Agent:
             print(f"User: {user_msg}")
             messages.append({"role": "user", "content": user_msg})
 
-            reply = self._agent_loop(system, messages)
-            reminder_date = self._proactive_reminder(system, messages + [{"role": "assistant", "content": reply}])
-            if reminder_date:
-                reply += f"\n\nI've set a reminder for {reminder_date} to follow up on this."
+            reply = self._agent_loop(system, messages,
+                                      tools=self._analysis_tools if session_num > 1 else None)
+            if session_num > 1:
+                reminder_date = self._proactive_reminder(system, messages + [{"role": "assistant", "content": reply}])
+                if reminder_date:
+                    reply += f"\n\nI've set a reminder for {reminder_date} to follow up on this."
             messages.append({"role": "assistant", "content": reply})
             print(f"\nAgent: {reply}")
 
@@ -261,17 +264,18 @@ class Agent:
 
         extraction_prompt = """From this conversation, extract exactly:
 1. A one-sentence summary of what happened
-2. Any explicit commitments the user made (amounts, dates, actions) as a list
-3. Key financial insights worth remembering (spending patterns, stated goals) as a list
+2. Commitments the USER THEMSELVES explicitly made (amounts, dates, actions they agreed to) — do NOT include suggestions the agent made that the user did not clearly accept
+3. Key financial insights worth remembering (spending patterns, goals the user stated) as a list — use only facts from the data, not agent recommendations
 
 Return ONLY valid JSON in this shape:
 {"summary": "...", "commitments": ["..."], "insights": ["..."]}
 
-Do NOT include balances or transaction amounts — those will be fetched fresh next session."""
+Do NOT include balances or transaction amounts — those will be fetched fresh next session.
+Do NOT include agent-suggested targets or caps unless the user explicitly agreed to them."""
 
         response = self.client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=512,
+            max_tokens=1024,
             system=extraction_prompt,
             messages=clean,
         )
@@ -290,7 +294,7 @@ Do NOT include balances or transaction amounts — those will be fetched fresh n
         record["session_id"] = session_num
         record["date"] = SESSION_DATES[session_num]
         self.memory.save(record)
-        print(f"\n[MEMORY] Saved: {json.dumps(record, indent=2)}")
+        print(f"\n[MEMORY] Saved: {json.dumps(record, indent=2, ensure_ascii=False)}")
 
 
 SESSIONS = {
