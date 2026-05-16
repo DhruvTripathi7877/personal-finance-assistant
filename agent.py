@@ -177,7 +177,32 @@ class Agent:
         self.client = anthropic.Anthropic()
 
     def _agent_loop(self, system: str, messages: list) -> str:
-        pass  # Task 7
+        while True:
+            response = self.client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=1024,
+                system=system,
+                tools=TOOL_DEFINITIONS,
+                messages=messages,
+            )
+
+            if response.stop_reason == "tool_use":
+                tool_results = []
+                for block in response.content:
+                    if block.type == "tool_use":
+                        result = execute_tool(block.name, block.input)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": json.dumps(result),
+                        })
+                messages.append({"role": "assistant", "content": response.content})
+                messages.append({"role": "user", "content": tool_results})
+
+            else:
+                for block in response.content:
+                    if hasattr(block, "text"):
+                        return block.text
 
     def run_session(self, session_num: int, user_turns: list):
         pass  # Task 8
