@@ -83,8 +83,36 @@ TOOL_DEFINITIONS = [
 ]
 
 
-def execute_tool(name: str, args: dict):
-    pass  # Task 4
+def execute_tool(name: str, args: dict) -> dict:
+    print(f"  [TOOL CALL] {name}({args})")
+
+    if name == "get_recent_transactions":
+        txns = get_recent_transactions(args["days"])
+        by_category: dict = {}
+        for t in txns:
+            cat = t["category"]
+            by_category[cat] = by_category.get(cat, 0) + abs(t["amount"])
+        result = {
+            "transactions": txns,
+            "category_totals_inr": by_category,
+            "total_debits_inr": sum(abs(t["amount"]) for t in txns if t["amount"] < 0),
+            "total_credits_inr": sum(t["amount"] for t in txns if t["amount"] > 0),
+        }
+    elif name == "get_account_balance":
+        result = get_account_balance()
+    elif name == "get_upcoming_bills":
+        bills = get_upcoming_bills(args.get("days", 30))
+        result = {
+            "bills": bills,
+            "total_due_inr": sum(b["amount"] for b in bills),
+        }
+    elif name == "set_reminder":
+        result = set_reminder(args["date"], args["content"])
+    else:
+        result = {"error": f"Unknown tool: {name}"}
+
+    print(f"  [TOOL RESULT] {json.dumps(result)}\n")
+    return result
 
 
 class MemoryStore:

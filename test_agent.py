@@ -6,7 +6,7 @@ import tempfile
 import pytest
 
 import tools
-from agent import MemoryStore, SESSION_DATES
+from agent import MemoryStore, SESSION_DATES, execute_tool
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -66,3 +66,43 @@ def test_format_for_prompt_includes_commitment_and_insight():
     assert "Transfer ₹30,000 on 2025-11-25" in prompt
     assert "Food delivery: ₹10,640" in prompt
     os.unlink(path)
+
+
+# ── execute_tool ──────────────────────────────────────────────────────────────
+
+def test_transactions_includes_category_totals():
+    tools.CURRENT_SESSION = 1
+    result = execute_tool("get_recent_transactions", {"days": 35})
+    assert "category_totals_inr" in result
+    assert "total_debits_inr" in result
+    assert "total_credits_inr" in result
+    assert result["category_totals_inr"]["food_delivery"] > 0
+
+
+def test_transactions_credits_match_salary():
+    tools.CURRENT_SESSION = 1
+    result = execute_tool("get_recent_transactions", {"days": 35})
+    assert result["total_credits_inr"] == 120000
+
+
+def test_bills_includes_total_due():
+    tools.CURRENT_SESSION = 1
+    result = execute_tool("get_upcoming_bills", {"days": 30})
+    assert "total_due_inr" in result
+    assert "bills" in result
+    expected = sum(b["amount"] for b in result["bills"])
+    assert result["total_due_inr"] == expected
+
+
+def test_set_reminder_returns_confirmation():
+    result = execute_tool("set_reminder", {
+        "date": "2025-11-25",
+        "content": "Transfer ₹30,000 to house fund",
+    })
+    assert result["status"] == "set"
+    assert result["date"] == "2025-11-25"
+
+
+def test_unknown_tool_returns_error_dict():
+    result = execute_tool("nonexistent_tool", {})
+    assert "error" in result
