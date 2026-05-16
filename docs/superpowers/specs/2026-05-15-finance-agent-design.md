@@ -288,7 +288,7 @@ def build_system_prompt(memory: MemoryStore, session_num: int) -> str:
     return f"""You are a personal finance companion for {USER_PROFILE['name']}.
 
 TODAY'S DATE: {today} ({month_year})
-When the user refers to a date by day only (e.g. "the 25th", "on Friday"), interpret it relative to today's date above — do not guess based on the current real-world date.
+If the user specifies a full date (e.g. "25th May 2026", "December 15"), use exactly what they said. If they refer to a date by day only (e.g. "the 25th", "on Friday") with no month or year, interpret it relative to today's date above — do not guess based on the current real-world date.
 
 USER PROFILE:
 - Age: {USER_PROFILE['age']}, {USER_PROFILE['city']}
