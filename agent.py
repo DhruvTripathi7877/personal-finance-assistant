@@ -134,8 +134,6 @@ class Agent:
     def __init__(self, memory):
         self.memory = memory
         self.client = anthropic.Anthropic()
-        self._analysis_tools = [t for t in TOOL_DEFINITIONS if t["name"] != "set_reminder"]
-        self._reminder_tools = [t for t in TOOL_DEFINITIONS if t["name"] == "set_reminder"]
 
     def _agent_loop(self, system: str, messages: list, tools: list | None = None) -> str:
         tools = tools if tools is not None else TOOL_DEFINITIONS
@@ -178,28 +176,6 @@ class Agent:
                 print()  # newline after streamed text
                 return next(b.text for b in response.content if hasattr(b, "text"))
 
-    def _proactive_reminder(self, system: str, messages: list) -> str | None:
-        check_msgs = messages + [{"role": "user", "content": (
-            "Review your last response. If you advised the user to defer a decision to a "
-            "specific future time (e.g. 'revisit in January', 'wait a couple months', "
-            "'check back in December'), set a reminder for that date using set_reminder. "
-            "If your response contained no time-based deferral, say 'No reminders needed.'"
-        )}]
-        resp = self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=256,
-            system=system,
-            tools=self._reminder_tools,
-            messages=check_msgs,
-        )
-        if resp.stop_reason == "tool_use":
-            for block in resp.content:
-                if block.type == "tool_use":
-                    result = execute_tool(block.name, block.input)
-                    if result.get("status") == "set":
-                        return result["date"]
-        return None
-
     def run_session(self, session_num: int, user_turns: list):
         system = build_system_prompt(self.memory, session_num)
         messages = []
@@ -209,14 +185,7 @@ class Agent:
             print(f"User: {user_msg}")
             messages.append({"role": "user", "content": user_msg})
 
-            reply = self._agent_loop(system, messages,
-                                      tools=self._analysis_tools if session_num > 1 else None)
-            if session_num > 1:
-                reminder_date = self._proactive_reminder(system, messages + [{"role": "assistant", "content": reply}])
-                if reminder_date:
-                    suffix = f"\n\nI've set a reminder for {reminder_date} to follow up on this."
-                    print(suffix, end="")
-                    reply += suffix
+            reply = self._agent_loop(system, messages)
             messages.append({"role": "assistant", "content": reply})
 
         if session_num == 1:
