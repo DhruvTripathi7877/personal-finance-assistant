@@ -102,11 +102,6 @@ class MemoryStore:
         self._atomic_write(self.data)
         print(f"  [MEMORY SAVED] {self.path}")
 
-    def reset(self):
-        self.data = {"sessions": []}
-        self._atomic_write(self.data)
-        print(f"  [MEMORY RESET] {self.path}")
-
     def format_for_prompt(self, exclude_session_id: int | None = None) -> str:
         sessions = [s for s in self.data["sessions"] if s["session_id"] != exclude_session_id]
         if not sessions:

@@ -70,23 +70,6 @@ def test_format_for_prompt_excludes_current_session():
     os.unlink(path)
 
 
-def test_reset_clears_sessions_and_persists():
-    path = _tmp_path()
-    m = MemoryStore(path)
-    m.save({
-        "session_id": 1,
-        "date": "2025-11-03",
-        "summary": "some summary",
-        "commitments": [],
-        "insights": [],
-    })
-    m.reset()
-    assert m.data == {"sessions": []}
-    m2 = MemoryStore(path)
-    assert m2.data == {"sessions": []}
-    os.unlink(path)
-
-
 def test_format_for_prompt_includes_commitment_and_insight():
     path = _tmp_path()
     m = MemoryStore(path)
