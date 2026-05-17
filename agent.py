@@ -221,7 +221,7 @@ class Agent:
 
         extraction_prompt = """From this conversation, extract exactly:
 1. A one-sentence summary of what happened
-2. Commitments the USER THEMSELVES explicitly made (amounts, dates, actions they agreed to) — do NOT include suggestions the agent made that the user did not clearly accept
+2. Commitments the USER THEMSELVES explicitly made (amounts, dates, actions they agreed to) — do NOT include suggestions the agent made that the user did not clearly accept. A commitment requires the user to have explicitly agreed or requested action (e.g. "remind me", "yes I'll do that", "let's do it"). A user asking "what if I did X" or "is X realistic" is NOT a commitment to X.
 3. Key financial insights worth remembering (spending patterns, goals the user stated) as a list — use only facts from the data, not agent recommendations
 4. Don't include amounts which can change over time like account balances, recent_transactions, upcoming_bills etc.
 
