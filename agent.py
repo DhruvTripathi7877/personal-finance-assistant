@@ -223,6 +223,7 @@ class Agent:
 1. A one-sentence summary of what happened
 2. Commitments the USER THEMSELVES explicitly made (amounts, dates, actions they agreed to) — do NOT include suggestions the agent made that the user did not clearly accept
 3. Key financial insights worth remembering (spending patterns, goals the user stated) as a list — use only facts from the data, not agent recommendations
+4. Don't include amounts which can change over time like account balances, recent_transactions, upcoming_bills etc.
 
 Return ONLY valid JSON in this shape:
 {"summary": "...", "commitments": ["..."], "insights": ["..."]}

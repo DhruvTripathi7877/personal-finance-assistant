@@ -1,1 +1,18 @@
-{"sessions": []}
+{
+  "sessions": [
+    {
+      "summary": "User reviewed their monthly finances after salary credit and made a plan to cut food delivery spending in half and transfer ₹30,000 to their house fund on the 25th of the month.",
+      "commitments": [
+        "Transfer ₹30,000 to house fund on the 25th of the month",
+        "Cut food delivery spending in half (target ~₹5,845 this month)"
+      ],
+      "insights": [
+        "User has a house fund savings goal of ₹15 lakh within 2 years",
+        "Food delivery (Swiggy + Zomato) was the single biggest discretionary expense last month at ₹11,690 across 8 orders",
+        "User's monthly committed bills total ₹46,500 (rent, SIP, internet/mobile, credit card)"
+      ],
+      "session_id": 1,
+      "date": "2025-11-03"
+    }
+  ]
+}

@@ -2,15 +2,6 @@
 
 A finance companion agent that holds two conversations with the same user three days apart, demonstrating memory persistence, tool calling, and judgment across sessions.
 
-Built with the Anthropic SDK only — no agent frameworks.
-
----
-
-## How it works
-
-- **Session 1 (Monday, Nov 3):** 4 user turns. Agent helps Priya plan savings, analyse food delivery spending, check if a ₹30,000 house fund commitment is realistic, and sets a reminder.
-- **Session 2 (Thursday, Nov 6):** 1 user turn. Priya asks about buying a MacBook. Agent connects the question to the savings plan from Session 1, checks fresh balances via tools, and gives a grounded answer.
-
 ---
 
 ## Prerequisites
