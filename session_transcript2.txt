@@ -1,0 +1,15 @@
+
+────────────────────────────────────────────────────────────
+User: Hey, my colleague is selling his MacBook for ₹80,000, barely used. I've been wanting to upgrade. Should I buy it?
+
+Agent: Let me pull up your current balance and recent spending to give you a proper answer!  
+[TOOL CALL] get_account_balance({})
+[TOOL RESULT] checking ₹128,000 | savings ₹145,000 | house_fund ₹95,000 | mutual_funds ₹280,000
+  
+[TOOL CALL] get_recent_transactions({'days': 30})
+[TOOL RESULT] 16 txns — debits ₹36,590 | credits ₹120,000 | food_delivery ₹11,690 | shopping ₹8,000 | investment ₹10,000 | groceries ₹3,200 | entertainment ₹1,500 | fuel ₹2,200 | salary ₹120,000
+I'd recommend **holding off on this purchase for now**, and here's why the numbers don't quite support it.
+
+The ₹80,000 MacBook would be a significant hit across your finances. Your checking account has ₹1,28,000, but you already have a committed transfer of **₹30,000 to your house fund on the 25th of November** — that's a promise you made to your future self. Spending ₹80,000 right now would leave you with just ~₹18,000 in checking after both outflows, essentially wiping out your buffer for the rest of the month. Your savings account has ₹1,45,000, but dipping into that undermines the momentum you're building — your house fund is at ₹95,000 and you need to reach **₹15 lakh in roughly 2 years**, which requires staying disciplined at ~₹62,500/month in savings.
+
+That said, this isn't a flat "no" forever. Your last month's total spending was **₹36,590** against a ₹1,20,000 salary, which means you do have real surplus capacity. If the MacBook is a genuine upgrade you need (not just want), a smarter path would be to **set aside ₹10,000–15,000 per month** over the next 5–6 months into a separate tech fund, so the purchase doesn't derail your house goal. Also worth checking — is your colleague open to waiting a bit, or maybe even a small EMI arrangement? That could make this much more manageable without touching your house fund momentum.
