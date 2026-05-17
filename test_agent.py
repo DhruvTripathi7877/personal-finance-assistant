@@ -51,6 +51,25 @@ def test_save_persists_to_disk():
     os.unlink(path)
 
 
+def test_save_upserts_existing_session_id():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    m.save({"session_id": 1, "date": "2025-11-03", "summary": "first run", "commitments": [], "insights": []})
+    m.save({"session_id": 1, "date": "2025-11-03", "summary": "second run", "commitments": [], "insights": []})
+    assert len(m.data["sessions"]) == 1
+    assert m.data["sessions"][0]["summary"] == "second run"
+    os.unlink(path)
+
+
+def test_format_for_prompt_excludes_current_session():
+    path = _tmp_path()
+    m = MemoryStore(path)
+    m.save({"session_id": 1, "date": "2025-11-03", "summary": "session 1 summary", "commitments": [], "insights": []})
+    assert "session 1 summary" not in m.format_for_prompt(exclude_session_id=1)
+    assert "session 1 summary" in m.format_for_prompt(exclude_session_id=2)
+    os.unlink(path)
+
+
 def test_reset_clears_sessions_and_persists():
     path = _tmp_path()
     m = MemoryStore(path)

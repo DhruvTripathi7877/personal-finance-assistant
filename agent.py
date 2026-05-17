@@ -94,6 +94,10 @@ class MemoryStore:
         os.replace(tmp_path, self.path)
 
     def save(self, session_record: dict):
+        self.data["sessions"] = [
+            s for s in self.data["sessions"]
+            if s["session_id"] != session_record["session_id"]
+        ]
         self.data["sessions"].append(session_record)
         self._atomic_write(self.data)
         print(f"  [MEMORY SAVED] {self.path}")
@@ -103,11 +107,12 @@ class MemoryStore:
         self._atomic_write(self.data)
         print(f"  [MEMORY RESET] {self.path}")
 
-    def format_for_prompt(self) -> str:
-        if not self.data["sessions"]:
+    def format_for_prompt(self, exclude_session_id: int | None = None) -> str:
+        sessions = [s for s in self.data["sessions"] if s["session_id"] != exclude_session_id]
+        if not sessions:
             return "No previous sessions."
         lines = []
-        for s in self.data["sessions"]:
+        for s in sessions:
             lines.append(f"Session {s['session_id']} ({s['date']}):")
             lines.append(f"  Summary: {s['summary']}")
             for c in s.get("commitments", []):
@@ -131,7 +136,7 @@ USER PROFILE:
 - Primary goal: {USER_PROFILE['stated_goal']}
 
 MEMORY FROM PREVIOUS SESSIONS:
-{memory.format_for_prompt()}
+{memory.format_for_prompt(exclude_session_id=session_num)}
 
 BEHAVIOR RULES:
 1. For any current financial numbers (balances, upcoming bills), always call the relevant tool — never quote numbers from memory, they go stale.
@@ -189,8 +194,6 @@ class Agent:
                 return next(b.text for b in response.content if hasattr(b, "text"))
 
     def run_session(self, session_num: int, user_turns: list):
-        if session_num == 1:
-            self.memory.reset()
         system = build_system_prompt(self.memory, session_num)
         messages = []
 
