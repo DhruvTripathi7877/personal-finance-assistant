@@ -91,6 +91,12 @@ class MemoryStore:
             json.dump(self.data, f, indent=2, ensure_ascii=False)
         print(f"  [MEMORY SAVED] {self.path}")
 
+    def reset(self):
+        self.data = {"sessions": []}
+        with open(self.path, "w") as f:
+            json.dump(self.data, f, indent=2)
+        print(f"  [MEMORY RESET] {self.path}")
+
     def format_for_prompt(self) -> str:
         if not self.data["sessions"]:
             return "No previous sessions."
@@ -177,6 +183,8 @@ class Agent:
                 return next(b.text for b in response.content if hasattr(b, "text"))
 
     def run_session(self, session_num: int, user_turns: list):
+        if session_num == 1:
+            self.memory.reset()
         system = build_system_prompt(self.memory, session_num)
         messages = []
 
