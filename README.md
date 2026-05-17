@@ -43,6 +43,12 @@ python agent.py 1
 
 This runs 4 user turns and writes `memory.json` at the end.
 
+To save a transcript while running:
+
+```bash
+python agent.py 1 | tee session1_transcript.txt
+```
+
 **Step 2 — Flip the session**
 
 Open `tools.py` and change line 12 to:
@@ -57,6 +63,12 @@ CURRENT_SESSION = 2
 python agent.py 2
 ```
 
+To save a transcript while running:
+
+```bash
+python agent.py 2 | tee session2_transcript.txt
+```
+
 The agent loads `memory.json` from Session 1 and uses it to answer Priya's MacBook question with full context.
 
 ---
@@ -67,7 +79,7 @@ The agent loads `memory.json` from Session 1 and uses it to answer Priya's MacBo
 pytest test_agent.py -v
 ```
 
-14 unit tests covering `MemoryStore`, `execute_tool`, and `build_system_prompt`.
+16 unit tests covering `MemoryStore`, `execute_tool`, and `build_system_prompt`.
 
 ---
 
