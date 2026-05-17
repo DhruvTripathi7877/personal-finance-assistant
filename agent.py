@@ -2,6 +2,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 from datetime import datetime, timedelta
 
@@ -16,7 +17,7 @@ from tools import (
 from config import USER_PROFILE, SESSION_DATES, TOOL_DEFINITIONS, SESSIONS
 
 
-def _typewrite(line: str, delay: float = 0.1) -> None:
+def _typewrite(line: str, delay: float = 0.015) -> None:
     for ch in line:
         sys.stdout.write(ch)
         sys.stdout.flush()
@@ -85,16 +86,21 @@ class MemoryStore:
                 return json.load(f)
         return {"sessions": []}
 
+    def _atomic_write(self, data: dict):
+        dir_name = os.path.dirname(os.path.abspath(self.path))
+        with tempfile.NamedTemporaryFile("w", dir=dir_name, delete=False, suffix=".tmp") as tmp:
+            json.dump(data, tmp, indent=2, ensure_ascii=False)
+            tmp_path = tmp.name
+        os.replace(tmp_path, self.path)
+
     def save(self, session_record: dict):
         self.data["sessions"].append(session_record)
-        with open(self.path, "w") as f:
-            json.dump(self.data, f, indent=2, ensure_ascii=False)
+        self._atomic_write(self.data)
         print(f"  [MEMORY SAVED] {self.path}")
 
     def reset(self):
         self.data = {"sessions": []}
-        with open(self.path, "w") as f:
-            json.dump(self.data, f, indent=2)
+        self._atomic_write(self.data)
         print(f"  [MEMORY RESET] {self.path}")
 
     def format_for_prompt(self) -> str:
