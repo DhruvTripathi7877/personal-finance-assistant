@@ -220,8 +220,17 @@ class Agent:
         extraction_prompt = """From this conversation, extract exactly:
 1. A one-sentence summary of what happened
 2. Commitments the USER THEMSELVES explicitly made (amounts, dates, actions they agreed to) — do NOT include suggestions the agent made that the user did not clearly accept. A commitment requires the user to have explicitly agreed or requested action (e.g. "remind me", "yes I'll do that", "let's do it"). A user asking "what if I did X" or "is X realistic" is NOT a commitment to X.
+
+   Example:
+   User: "Is cutting food delivery in half realistic?"
+   Agent: [explains it is feasible]
+   User: "Got it. Remind me to transfer ₹30,000 on the 25th."
+   → Commitment: "Transfer ₹30,000 on the 25th" ✓
+   → NOT a commitment: "Cut food delivery in half" ✗
+     ("Got it" acknowledged the agent's answer; the only explicit request was the reminder)
+
 3. Key financial insights worth remembering (spending patterns, goals the user stated) as a list — use only facts from the data, not agent recommendations
-4. Don't include amounts which can change over time like account balances, recent_transactions, upcoming_bills etc.
+4. Do NOT include any amounts that can change over time: account balances, transaction totals, upcoming bill totals, or bill breakdowns. These will be fetched fresh next session.
 
 Return ONLY valid JSON in this shape:
 {"summary": "...", "commitments": ["..."], "insights": ["..."]}
